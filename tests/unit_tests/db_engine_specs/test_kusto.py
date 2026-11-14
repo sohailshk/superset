@@ -21,7 +21,7 @@ from typing import Optional
 import pytest
 from sqlalchemy import column
 
-from superset.db_engine_specs.kusto import KustoKqlEngineSpec
+from superset.db_engine_specs.kusto import KustoKqlEngineSpec, KustoSqlEngineSpec
 from superset.sql.parse import SQLScript
 from tests.unit_tests.db_engine_specs.utils import assert_convert_dttm
 from tests.unit_tests.fixtures.common import dttm  # noqa: F401
@@ -136,6 +136,25 @@ def test_timegrain_expressions(in_duration: str, expected_result: str) -> None:
     col = column("temporal")
 
     actual_result = KustoKqlEngineSpec.get_timestamp_expr(
+        col=col, pdf=None, time_grain=in_duration
+    )
+    assert str(actual_result) == expected_result
+
+
+@pytest.mark.parametrize(
+    "in_duration,expected_result",
+    [
+        (
+            "PT1S",
+            "DATEADD(second, DATEDIFF(second, '2000-01-01', temporal), '2000-01-01')",
+        ),
+        ("PT30M", "DATEADD(minute, DATEDIFF(minute, 0, temporal) / 30 * 30, 0)"),
+    ],
+)
+def test_sql_timegrain_expressions(in_duration: str, expected_result: str) -> None:
+    col = column("temporal")
+
+    actual_result = KustoSqlEngineSpec.get_timestamp_expr(
         col=col, pdf=None, time_grain=in_duration
     )
     assert str(actual_result) == expected_result

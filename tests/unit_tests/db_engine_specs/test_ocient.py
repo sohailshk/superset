@@ -20,10 +20,13 @@
 from typing import Any, Callable
 
 import pytest
+from sqlalchemy import column
 
+from superset.constants import TimeGrain
 from superset.db_engine_specs.ocient import (
     _point_list_to_wkt,
     _sanitized_ocient_type_codes,
+    OcientEngineSpec,
 )
 from superset.errors import ErrorLevel, SupersetError, SupersetErrorType
 
@@ -415,3 +418,15 @@ def test_point_list_to_wkt() -> None:
         [_STPoint(long=t[0], lat=t[1]) for t in [(2, 0), (2, 1), (2, 0)]]
     )
     assert wkt == "LINESTRING(2 0, 2 1, 2 0)"
+
+
+def test_quarter_time_grain() -> None:
+    """
+    The quarter grain is requested as ``P3M`` (the value the chart controls
+    send); it must map to an expression and be offered in the grain options.
+    """
+    expr = OcientEngineSpec.get_timestamp_expr(
+        col=column("temporal"), pdf=None, time_grain="P3M"
+    )
+    assert str(expr) == "ROUND(temporal, 'QUARTER')"
+    assert TimeGrain.QUARTER in {g.duration for g in OcientEngineSpec.get_time_grains()}

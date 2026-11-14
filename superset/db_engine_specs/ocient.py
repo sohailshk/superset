@@ -308,6 +308,7 @@ class OcientEngineSpec(BaseEngineSpec):
         TimeGrain.DAY: "ROUND({col}, 'DAY')",
         TimeGrain.WEEK: "ROUND({col}, 'WEEK')",
         TimeGrain.MONTH: "ROUND({col}, 'MONTH')",
+        TimeGrain.QUARTER: "ROUND({col}, 'QUARTER')",
         TimeGrain.QUARTER_YEAR: "ROUND({col}, 'QUARTER')",
         TimeGrain.YEAR: "ROUND({col}, 'YEAR')",
     }
